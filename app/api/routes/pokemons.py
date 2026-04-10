@@ -18,21 +18,29 @@ async def get_pokemons(
     request: Request,
     api_key: str = Depends(verify_api_key),
     limit: int = Query(default=settings.DEFAULT_LIMIT, ge=1, le=settings.MAX_LIMIT),
-    offset: int = Query(default=0, ge=0)
+    offset: int = Query(default=0, ge=0),
 ):
     """Get paginated list of pokemons (requires API key)"""
     logger.info(f"Fetching pokemons - limit: {limit}, offset: {offset}")
-    
+
     try:
         pokemons_data, total = await pokemon_service.get_pokemon_list(limit, offset)
         pokemons = [pokemon_service._transform_pokemon_data(p) for p in pokemons_data]
-        
+
         next_offset = offset + limit
         previous_offset = offset - limit if offset - limit >= 0 else None
-        
-        next_url = f"/api/v1/pokemons?limit={limit}&offset={next_offset}" if next_offset < total else None
-        previous_url = f"/api/v1/pokemons?limit={limit}&offset={previous_offset}" if previous_offset is not None else None
-        
+
+        next_url = (
+            f"/api/v1/pokemons?limit={limit}&offset={next_offset}"
+            if next_offset < total
+            else None
+        )
+        previous_url = (
+            f"/api/v1/pokemons?limit={limit}&offset={previous_offset}"
+            if previous_offset is not None
+            else None
+        )
+
         return PokemonListResponse(
             data=pokemons,
             pagination=PaginationMeta(
@@ -40,8 +48,8 @@ async def get_pokemons(
                 limit=limit,
                 offset=offset,
                 next=next_url,
-                previous=previous_url
-            )
+                previous=previous_url,
+            ),
         )
     except HTTPException:
         raise
@@ -49,20 +57,18 @@ async def get_pokemons(
         logger.error(f"Unexpected error in get_pokemons: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            detail="Internal server error",
         )
 
 
 @router.get("/pokemons/{identifier}", response_model=PokemonResponse)
 @limiter.limit(settings.RATE_LIMIT)
 async def get_pokemon(
-    request: Request,
-    identifier: str,
-    api_key: str = Depends(verify_api_key)
+    request: Request, identifier: str, api_key: str = Depends(verify_api_key)
 ):
     """Get pokemon details by ID or name (requires API key)"""
     logger.info(f"Fetching pokemon: {identifier}")
-    
+
     try:
         if identifier.isdigit():
             return await pokemon_service.get_pokemon_by_id(int(identifier))
@@ -74,7 +80,7 @@ async def get_pokemon(
         logger.error(f"Unexpected error in get_pokemon: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            detail="Internal server error",
         )
 
 
@@ -84,21 +90,29 @@ async def get_pokemon(
 async def get_pokemons_public(
     request: Request,
     limit: int = Query(default=settings.DEFAULT_LIMIT, ge=1, le=settings.MAX_LIMIT),
-    offset: int = Query(default=0, ge=0)
+    offset: int = Query(default=0, ge=0),
 ):
     """Get paginated list of pokemons (public endpoint)"""
     logger.info(f"Fetching pokemons (public) - limit: {limit}, offset: {offset}")
-    
+
     try:
         pokemons_data, total = await pokemon_service.get_pokemon_list(limit, offset)
         pokemons = [pokemon_service._transform_pokemon_data(p) for p in pokemons_data]
-        
+
         next_offset = offset + limit
         previous_offset = offset - limit if offset - limit >= 0 else None
-        
-        next_url = f"/api/v1/public/pokemons?limit={limit}&offset={next_offset}" if next_offset < total else None
-        previous_url = f"/api/v1/public/pokemons?limit={limit}&offset={previous_offset}" if previous_offset is not None else None
-        
+
+        next_url = (
+            f"/api/v1/public/pokemons?limit={limit}&offset={next_offset}"
+            if next_offset < total
+            else None
+        )
+        previous_url = (
+            f"/api/v1/public/pokemons?limit={limit}&offset={previous_offset}"
+            if previous_offset is not None
+            else None
+        )
+
         return PokemonListResponse(
             data=pokemons,
             pagination=PaginationMeta(
@@ -106,8 +120,8 @@ async def get_pokemons_public(
                 limit=limit,
                 offset=offset,
                 next=next_url,
-                previous=previous_url
-            )
+                previous=previous_url,
+            ),
         )
     except HTTPException:
         raise
@@ -115,19 +129,16 @@ async def get_pokemons_public(
         logger.error(f"Unexpected error in get_pokemon_public: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-    )
+            detail="Internal server error",
+        )
 
 
 @router.get("/public/pokemons/{identifier}", response_model=PokemonResponse)
 @limiter.limit(settings.RATE_LIMIT)
-async def get_pokemon_public(
-    request: Request,
-    identifier: str
-):
+async def get_pokemon_public(request: Request, identifier: str):
     """Get pokemon details by ID or name (public endpoint)"""
     logger.info(f"Fetching pokemon (public): {identifier}")
-    
+
     try:
         if identifier.isdigit():
             return await pokemon_service.get_pokemon_by_id(int(identifier))
@@ -139,5 +150,5 @@ async def get_pokemon_public(
         logger.error(f"Unexpected error in get_pokemons_public: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
-    )
+            detail="Internal server error",
+        )

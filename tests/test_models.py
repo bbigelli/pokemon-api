@@ -1,5 +1,9 @@
-from app.models.pokemon import (PaginationMeta, PokemonListResponse,
-                                PokemonResponse, PokemonSprites)
+from app.models.pokemon import (
+    PaginationMeta,
+    PokemonListResponse,
+    PokemonResponse,
+    PokemonSprites,
+)
 
 
 def test_pokemon_sprites_model():
