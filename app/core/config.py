@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -26,8 +26,17 @@ class Settings(BaseSettings):
     DEFAULT_LIMIT: int = 20
     MAX_LIMIT: int = 100
     
+    # API Keys (comma-separated)
+    API_KEYS: str = "dev-api-key-123,test-api-key-456"
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Allow extra fields in .env
 
 settings = Settings()
+
+# Parse API keys into a list
+def get_api_keys() -> List[str]:
+    """Parse API keys from string to list"""
+    return [key.strip() for key in settings.API_KEYS.split(",") if key.strip()]

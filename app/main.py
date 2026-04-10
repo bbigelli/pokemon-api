@@ -16,7 +16,7 @@ logger = setup_logger()
 # Initialize FastAPI app
 app = FastAPI(
     title="Pokemon API",
-    description="API RESTful para consulta de Pokemons com cache e rate limiting",
+    description="API RESTful para consulta de Pokemons com cache, rate limiting e autenticação API Key",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -62,7 +62,9 @@ async def root():
         "message": "Welcome to Pokemon API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "auth_required": "Use X-API-Key header with valid API key",
+        "public_endpoints": "/api/v1/public/pokemons"
     }
 
 @app.get("/health")

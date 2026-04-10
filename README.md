@@ -30,9 +30,29 @@ Uma API RESTful para consulta de Pokemons, construída com FastAPI, consumindo d
 - Docker e Docker Compose
 - Python 3.11+ (para desenvolvimento)
 
+## 🔐 Autenticação
+
+A API utiliza **API Key** para autenticação nos endpoints protegidos.
+
+### Como obter uma API Key
+
+As API Keys são configuradas via variável de ambiente `API_KEYS` (valores separados por vírgula).
+
+Keys padrão para desenvolvimento:
+- `dev-api-key-123`
+- `test-api-key-456`
+
+### Como usar
+
+Inclua o header `X-API-Key` em todas as requisições para endpoints protegidos:
+
+bash
+curl -H "X-API-Key: dev-api-key-123" \
+  "http://localhost:8000/api/v1/pokemons?limit=5&offset=0"
+
 ### Com Docker
 
-```bash
+bash
 # Clone o repositório
 git clone https://github.com/bbigelli/pokemon-api.git
 cd pokemon-api
@@ -53,6 +73,8 @@ pytest --cov=app --cov-report=html
 
 # Ver relatório de cobertura
 open htmlcov/index.html
+windows
+start htmlcov/index.html
 
 📝 Endpoints
 GET /api/v1/pokemons?limit=20&offset=0
