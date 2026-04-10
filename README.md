@@ -57,9 +57,6 @@ bash
 git clone https://github.com/bbigelli/pokemon-api.git
 cd pokemon-api
 
-# Configure as variáveis de ambiente
-cp .env.example .env
-
 # Execute com Docker Compose
 docker-compose up --build
 
