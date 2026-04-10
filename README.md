@@ -99,7 +99,7 @@ Swagger UI: http://localhost:8000/docs
 ReDoc: http://localhost:8000/redoc
 
 🌐 API em Produção
-https://pokemon-api.onrender.com
+https://pokemon-api-kmns.onrender.com
 
 🚦 CI/CD Pipeline
 O pipeline é executado no GitHub Actions para:
