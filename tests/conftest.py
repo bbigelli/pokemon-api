@@ -11,38 +11,43 @@ import os
 # Configurar banco de dados de teste
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
+
 @pytest.fixture(scope="session")
 def client():
     """Test client fixture"""
     # Recriar tabelas para cada teste
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     def override_get_db():
         db = SessionLocal()
         try:
             yield db
         finally:
             db.close()
-    
+
     from app.core.database import SessionLocal
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     yield TestClient(app)
-    
+
     app.dependency_overrides.clear()
+
 
 @pytest.fixture
 def db_session():
     """Database session fixture for testing"""
     Base.metadata.create_all(bind=engine)
     from app.core.database import SessionLocal
+
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture
 def mock_pokemon_data_dict():
@@ -55,9 +60,10 @@ def mock_pokemon_data_dict():
         "types": [{"type": {"name": "electric"}}],
         "sprites": {
             "front_default": "https://example.com/front.png",
-            "back_default": "https://example.com/back.png"
-        }
+            "back_default": "https://example.com/back.png",
+        },
     }
+
 
 @pytest.fixture
 def mock_pokemon_response():
@@ -70,9 +76,10 @@ def mock_pokemon_response():
         types=["electric"],
         sprites=PokemonSprites(
             front_default="https://example.com/front.png",
-            back_default="https://example.com/back.png"
-        )
+            back_default="https://example.com/back.png",
+        ),
     )
+
 
 @pytest.fixture
 def mock_pokemon_list_data():
@@ -84,14 +91,16 @@ def mock_pokemon_list_data():
             "height": 4,
             "weight": 60,
             "types": [{"type": {"name": "electric"}}],
-            "sprites": {"front_default": None, "back_default": None}
+            "sprites": {"front_default": None, "back_default": None},
         }
     ]
+
 
 @pytest.fixture
 def valid_api_key():
     """Valid API key for testing"""
     return "dev-api-key-123"
+
 
 @pytest.fixture
 def auth_headers(valid_api_key):

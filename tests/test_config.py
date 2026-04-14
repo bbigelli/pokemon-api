@@ -1,5 +1,6 @@
 from app.core.config import settings, get_api_keys
 
+
 def test_config_default_values():
     """Test default configuration values"""
     # DEBUG pode ser True em ambiente de teste, então verificamos apenas o tipo
@@ -11,6 +12,7 @@ def test_config_default_values():
     assert settings.POKEAPI_BASE_URL == "https://pokeapi.co/api/v2"
     assert settings.POKEAPI_TIMEOUT == 30
     assert settings.API_KEYS is not None
+
 
 def test_get_api_keys():
     """Test API keys parsing"""

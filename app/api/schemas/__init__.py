@@ -4,13 +4,13 @@ from app.api.schemas.favorite import (
     FavoritePokemonCreate,
     FavoritePokemonUpdate,
     FavoritePokemonResponse,
-    FavoritePokemonListResponse
+    FavoritePokemonListResponse,
 )
 
 __all__ = [
     "FavoritePokemonBase",
-    "FavoritePokemonCreate", 
+    "FavoritePokemonCreate",
     "FavoritePokemonUpdate",
     "FavoritePokemonResponse",
-    "FavoritePokemonListResponse"
+    "FavoritePokemonListResponse",
 ]
