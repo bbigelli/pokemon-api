@@ -30,9 +30,9 @@ async def test_make_request_timeout():
     service = PokemonService()
 
     with patch("httpx.AsyncClient") as mock_client:
-        # Simulate timeout exception - corrigido
+        # Simulate timeout exception usando o tipo correto
         mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            side_effect=httpx.TimeoutException("Timeout")
+            side_effect=httpx.ConnectTimeout("Connection timeout")
         )
 
         with pytest.raises(HTTPException) as exc_info:
@@ -100,9 +100,9 @@ async def test_make_request_general_exception():
     service = PokemonService()
 
     with patch("httpx.AsyncClient") as mock_client:
-        # Simulate general exception - corrigido
+        # Simulate general exception
         mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            side_effect=Exception("Something went wrong")
+            side_effect=RuntimeError("Something went wrong")
         )
 
         with pytest.raises(HTTPException) as exc_info:
