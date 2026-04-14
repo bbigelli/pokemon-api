@@ -1,11 +1,9 @@
-from unittest.mock import AsyncMock, MagicMock, patch
-
-import httpx
 import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi import HTTPException
-
+import httpx
+from app.services.pokemon_service import pokemon_service, PokemonService
 from app.models.pokemon import PokemonResponse, PokemonSprites
-from app.services.pokemon_service import PokemonService, pokemon_service
 
 
 @pytest.mark.asyncio
@@ -16,8 +14,9 @@ async def test_make_request_success():
         mock_response.json.return_value = {"name": "pikachu"}
         mock_response.raise_for_status = MagicMock()
 
-        mock_get = AsyncMock(return_value=mock_response)
-        mock_client.return_value.__aenter__.return_value.get = mock_get
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
+            return_value=mock_response
+        )
 
         result = await pokemon_service._make_request(
             "https://pokeapi.co/api/v2/pokemon/25"
@@ -28,7 +27,6 @@ async def test_make_request_success():
 @pytest.mark.asyncio
 async def test_make_request_timeout():
     """Test request timeout handling"""
-    # Create a new service instance for testing
     service = PokemonService()
 
     with patch("httpx.AsyncClient") as mock_client:
@@ -54,7 +52,6 @@ async def test_make_request_404():
         mock_response = MagicMock()
         mock_response.status_code = 404
 
-        # Create the HTTPStatusError properly
         error = httpx.HTTPStatusError(
             "404 Error", request=MagicMock(), response=mock_response
         )
