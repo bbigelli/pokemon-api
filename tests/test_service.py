@@ -31,9 +31,9 @@ async def test_make_request_timeout():
 
     with patch("httpx.AsyncClient") as mock_client:
         # Simulate timeout exception
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            side_effect=httpx.TimeoutException("Timeout")
-        )
+        mock_get = AsyncMock()
+        mock_get.side_effect = httpx.TimeoutException("Timeout")
+        mock_client.return_value.__aenter__.return_value.get = mock_get
 
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
@@ -101,9 +101,9 @@ async def test_make_request_general_exception():
 
     with patch("httpx.AsyncClient") as mock_client:
         # Simulate general exception
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            side_effect=Exception("Something went wrong")
-        )
+        mock_get = AsyncMock()
+        mock_get.side_effect = Exception("Something went wrong")
+        mock_client.return_value.__aenter__.return_value.get = mock_get
 
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
