@@ -38,7 +38,8 @@ async def create_favorite(
     - Pokemon cannot be already in favorites
     """
     logger.info(f"Creating favorite pokemon: {favorite_data.pokemon_id}")
-    return await favorite_service.create_favorite(db, favorite_data)
+    favorite = await favorite_service.create_favorite(db, favorite_data)
+    return favorite.to_schema()
 
 
 @router.get("/favorites", response_model=FavoritePokemonListResponse)
@@ -62,8 +63,11 @@ async def get_favorites(
 
     favorites, total = favorite_service.get_favorites(db, offset, limit, only_favorites)
 
+    # Convert SQLAlchemy models to Pydantic schemas
+    favorites_data = [favorite.to_schema() for favorite in favorites]
+
     return FavoritePokemonListResponse(
-        data=favorites, total=total, limit=limit, offset=offset
+        data=favorites_data, total=total, limit=limit, offset=offset
     )
 
 
@@ -81,7 +85,8 @@ async def get_favorite_by_id(
     - Requires valid API key
     """
     logger.info(f"Fetching favorite by ID: {favorite_id}")
-    return favorite_service.get_favorite_by_id(db, favorite_id)
+    favorite = favorite_service.get_favorite_by_id(db, favorite_id)
+    return favorite.to_schema()
 
 
 @router.get("/favorites/pokemon/{pokemon_id}", response_model=FavoritePokemonResponse)
@@ -104,7 +109,7 @@ async def get_favorite_by_pokemon_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Pokemon {pokemon_id} not found in favorites",
         )
-    return favorite
+    return favorite.to_schema()
 
 
 @router.put("/favorites/{favorite_id}", response_model=FavoritePokemonResponse)
@@ -123,7 +128,8 @@ async def update_favorite(
     - Can update nickname, notes, is_favorite status
     """
     logger.info(f"Updating favorite ID: {favorite_id}")
-    return favorite_service.update_favorite(db, favorite_id, update_data)
+    favorite = favorite_service.update_favorite(db, favorite_id, update_data)
+    return favorite.to_schema()
 
 
 @router.delete("/favorites/{favorite_id}", status_code=status.HTTP_204_NO_CONTENT)
