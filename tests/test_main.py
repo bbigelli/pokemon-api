@@ -20,8 +20,8 @@ def test_root_endpoint_structure():
     assert "health" in data
     assert "auth_required" in data
     assert "public_endpoints" in data
-    assert data["version"] == "1.0.0"
-    assert data["message"] == "Welcome to Pokemon API"
+    assert "crud_endpoints" in data
+    assert data["version"] == "2.0.0"
 
 
 def test_health_check_response():

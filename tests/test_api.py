@@ -17,7 +17,7 @@ def test_root_endpoint():
     data = response.json()
     assert "message" in data
     assert "version" in data
-    assert data["version"] == "1.0.0"
+    assert data["version"] == "2.0.0"
     assert data["message"] == "Welcome to Pokemon API"
 
 
