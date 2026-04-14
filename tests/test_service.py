@@ -13,14 +13,10 @@ async def test_make_request_success():
         mock_response = MagicMock()
         mock_response.json.return_value = {"name": "pikachu"}
         mock_response.raise_for_status = MagicMock()
-
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            return_value=mock_response
-        )
-
-        result = await pokemon_service._make_request(
-            "https://pokeapi.co/api/v2/pokemon/25"
-        )
+        
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        
+        result = await pokemon_service._make_request("https://pokeapi.co/api/v2/pokemon/25")
         assert result == {"name": "pikachu"}
 
 
@@ -28,16 +24,16 @@ async def test_make_request_success():
 async def test_make_request_timeout():
     """Test request timeout handling"""
     service = PokemonService()
-
+    
     with patch("httpx.AsyncClient") as mock_client:
-        # Simulate timeout exception
-        mock_get = AsyncMock()
-        mock_get.side_effect = httpx.TimeoutException("Timeout")
-        mock_client.return_value.__aenter__.return_value.get = mock_get
-
+        # Simulate timeout exception - corrigido
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
+            side_effect=httpx.TimeoutException("Timeout")
+        )
+        
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
-
+        
         assert exc_info.value.status_code == 504
         assert "timeout" in exc_info.value.detail.lower()
 
@@ -46,24 +42,24 @@ async def test_make_request_timeout():
 async def test_make_request_404():
     """Test 404 error handling"""
     service = PokemonService()
-
+    
     with patch("httpx.AsyncClient") as mock_client:
         # Create a proper HTTPStatusError for 404
         mock_response = MagicMock()
         mock_response.status_code = 404
-
+        
         error = httpx.HTTPStatusError(
-            "404 Error", request=MagicMock(), response=mock_response
+            "404 Error",
+            request=MagicMock(),
+            response=mock_response
         )
-
+        
         mock_response.raise_for_status = MagicMock(side_effect=error)
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            return_value=mock_response
-        )
-
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/999999")
-
+        
         assert exc_info.value.status_code == 404
         assert "Pokemon not found" in exc_info.value.detail
 
@@ -72,24 +68,24 @@ async def test_make_request_404():
 async def test_make_request_500():
     """Test 500 error handling from PokeAPI"""
     service = PokemonService()
-
+    
     with patch("httpx.AsyncClient") as mock_client:
         # Create a proper HTTPStatusError for 500
         mock_response = MagicMock()
         mock_response.status_code = 500
-
+        
         error = httpx.HTTPStatusError(
-            "500 Error", request=MagicMock(), response=mock_response
+            "500 Error",
+            request=MagicMock(),
+            response=mock_response
         )
-
+        
         mock_response.raise_for_status = MagicMock(side_effect=error)
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            return_value=mock_response
-        )
-
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
-
+        
         assert exc_info.value.status_code == 502
         assert "PokeAPI error" in exc_info.value.detail
 
@@ -98,16 +94,16 @@ async def test_make_request_500():
 async def test_make_request_general_exception():
     """Test general exception handling"""
     service = PokemonService()
-
+    
     with patch("httpx.AsyncClient") as mock_client:
-        # Simulate general exception
-        mock_get = AsyncMock()
-        mock_get.side_effect = Exception("Something went wrong")
-        mock_client.return_value.__aenter__.return_value.get = mock_get
-
+        # Simulate general exception - corrigido
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
+            side_effect=Exception("Something went wrong")
+        )
+        
         with pytest.raises(HTTPException) as exc_info:
             await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
-
+        
         assert exc_info.value.status_code == 500
         assert "Internal server error" in exc_info.value.detail
 
@@ -116,26 +112,24 @@ async def test_make_request_general_exception():
 async def test_make_request_with_cache():
     """Test that cache is used for subsequent requests"""
     service = PokemonService()
-
-    with patch("httpx.AsyncClient") as mock_client, patch(
-        "app.services.pokemon_service.cache_service"
-    ) as mock_cache:
+    
+    with patch("httpx.AsyncClient") as mock_client, \
+         patch("app.services.pokemon_service.cache_service") as mock_cache:
+        
         # Mock cache miss then hit
         mock_cache.get.side_effect = [None, {"name": "pikachu"}]
         mock_cache.set.return_value = True
-
+        
         mock_response = MagicMock()
         mock_response.json.return_value = {"name": "pikachu"}
         mock_response.raise_for_status = MagicMock()
-
-        mock_client.return_value.__aenter__.return_value.get = AsyncMock(
-            return_value=mock_response
-        )
-
+        
+        mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        
         # First request - should hit the API
         result1 = await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
         assert result1 == {"name": "pikachu"}
-
+        
         # Second request - should use cache
         result2 = await service._make_request("https://pokeapi.co/api/v2/pokemon/25")
         assert result2 == {"name": "pikachu"}
@@ -152,12 +146,12 @@ async def test_transform_pokemon_data():
         "types": [{"type": {"name": "electric"}}, {"type": {"name": "flying"}}],
         "sprites": {
             "front_default": "https://example.com/front.png",
-            "back_default": "https://example.com/back.png",
-        },
+            "back_default": "https://example.com/back.png"
+        }
     }
-
+    
     result = pokemon_service._transform_pokemon_data(raw_data)
-
+    
     assert isinstance(result, PokemonResponse)
     assert result.id == 25
     assert result.name == "pikachu"
@@ -172,20 +166,18 @@ async def test_transform_pokemon_data():
 @pytest.mark.asyncio
 async def test_get_pokemon_by_id():
     """Test get pokemon by ID"""
-    with patch.object(
-        pokemon_service, "_make_request", new_callable=AsyncMock
-    ) as mock_request:
+    with patch.object(pokemon_service, '_make_request', new_callable=AsyncMock) as mock_request:
         mock_request.return_value = {
             "id": 25,
             "name": "pikachu",
             "height": 4,
             "weight": 60,
             "types": [{"type": {"name": "electric"}}],
-            "sprites": {"front_default": None, "back_default": None},
+            "sprites": {"front_default": None, "back_default": None}
         }
-
+        
         result = await pokemon_service.get_pokemon_by_id(25)
-
+        
         assert result.id == 25
         assert result.name == "pikachu"
         mock_request.assert_called_once_with("https://pokeapi.co/api/v2/pokemon/25")
@@ -194,38 +186,32 @@ async def test_get_pokemon_by_id():
 @pytest.mark.asyncio
 async def test_get_pokemon_by_name():
     """Test get pokemon by name"""
-    with patch.object(
-        pokemon_service, "_make_request", new_callable=AsyncMock
-    ) as mock_request:
+    with patch.object(pokemon_service, '_make_request', new_callable=AsyncMock) as mock_request:
         mock_request.return_value = {
             "id": 25,
             "name": "pikachu",
             "height": 4,
             "weight": 60,
             "types": [{"type": {"name": "electric"}}],
-            "sprites": {"front_default": None, "back_default": None},
+            "sprites": {"front_default": None, "back_default": None}
         }
-
+        
         result = await pokemon_service.get_pokemon_by_name("pikachu")
-
+        
         assert result.name == "pikachu"
-        mock_request.assert_called_once_with(
-            "https://pokeapi.co/api/v2/pokemon/pikachu"
-        )
+        mock_request.assert_called_once_with("https://pokeapi.co/api/v2/pokemon/pikachu")
 
 
 @pytest.mark.asyncio
 async def test_get_pokemon_list():
     """Test get pokemon list"""
-    with patch.object(
-        pokemon_service, "_make_request", new_callable=AsyncMock
-    ) as mock_request:
+    with patch.object(pokemon_service, '_make_request', new_callable=AsyncMock) as mock_request:
         mock_request.side_effect = [
             {
                 "count": 1281,
                 "results": [
                     {"name": "pikachu", "url": "https://pokeapi.co/api/v2/pokemon/25/"}
-                ],
+                ]
             },
             {
                 "id": 25,
@@ -233,12 +219,12 @@ async def test_get_pokemon_list():
                 "height": 4,
                 "weight": 60,
                 "types": [{"type": {"name": "electric"}}],
-                "sprites": {"front_default": None, "back_default": None},
-            },
+                "sprites": {"front_default": None, "back_default": None}
+            }
         ]
-
+        
         result, total = await pokemon_service.get_pokemon_list(1, 0)
-
+        
         assert len(result) == 1
         assert total == 1281
         assert result[0]["name"] == "pikachu"
