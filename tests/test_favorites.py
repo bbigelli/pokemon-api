@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app.main import app
 from app.core.database import Base, engine, get_db
@@ -8,14 +8,6 @@ from sqlalchemy.orm import Session
 client = TestClient(app)
 VALID_API_KEY = "dev-api-key-123"
 AUTH_HEADERS = {"X-API-Key": VALID_API_KEY}
-
-
-# Setup test database
-@pytest.fixture(autouse=True)
-def setup_test_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
 
 
 def test_create_favorite_success():
